@@ -1,0 +1,27 @@
+/docs
+  /00-context
+    Context-Pack.md
+    Glossary.md
+    Operating-Protocol.md
+  /10-product
+    PRD.md
+    Pricing.md
+  /20-ux
+    App-Map.md
+    User-Flows.md
+  /30-architecture
+    System-Overview.md
+    Data-Model.md
+  /40-ai
+    AI-Pipeline.md
+    Model-Inputs-Outputs.md
+  /50-api
+    API-Spec.md
+  /60-delivery
+    Phases-UNO-DUO-TRIO.md
+    Sprint-Backlog.md
+/adr
+  0001-separate-products-ozmos-korozyon.md
+  0002-no-discount-2nd-3rd-ozmos.md
+README.md
+CHANGELOG.md
