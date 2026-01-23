@@ -33,3 +33,34 @@ See: /docs/00-context/Operating-Protocol.md
 ## Current status
 - MVP: in definition
 - Next docs to produce: Repo skeleton templates
+
+## Backend Quickstart (BE-010)
+
+### Requirements
+
+- Python 3.11+
+- `MARETECH_JWT_SECRET` is REQUIRED (app will fail fast without it)
+
+### Environment
+
+Set these env vars before running:
+
+- `MARETECH_JWT_SECRET` (required)
+- `MARETECH_PASSWORD_SALT` (recommended; defaults to `dev-salt` if not set)
+
+**Example (bash):**
+```bash
+export MARETECH_JWT_SECRET="change-me"
+export MARETECH_PASSWORD_SALT="change-me-too"
+```
+
+### Install & Run
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+### Run Tests
+```bash
+pytest -q
+```
