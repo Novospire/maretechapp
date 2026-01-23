@@ -127,6 +127,31 @@ Acceptance:
 - Subscription options
 - Skip / Later option
 
+### UI-035 Corrosion Paywall — Acceptance Criteria (v1.0)
+
+Trigger rules:
+- Trigger A: After the FIRST free corrosion inspection result is shown (UI-034), before any tracking features.
+- Trigger B: If user attempts to create additional “slots / points” beyond the free allowance, show paywall immediately before capture starts.
+
+Free allowance (MVP default — see ADR 0001):
+- Up to 5 points/slots are free for the first corrosion inspection.
+- Any attempt to go beyond 5 must route to paywall and recommend the cheapest eligible subscription plan.
+
+What is unlocked by subscription:
+- Timeline view
+- Side-by-side comparison
+- Trend indicators
+- Follow-up capture alignment (ghost overlay per slot) remains available only in paid tracking mode.
+
+Skip / Later:
+- Skip keeps the free result accessible in history.
+- Skip does NOT unlock compare/timeline/trend.
+- Next time user tries tracking or >5 points, paywall is shown again.
+
+References:
+- ADR-0001 Capture Policy
+- Context-Pack “Capture & model” section
+
 ---
 
 ## TICKET GROUP 4 — Corrosion Tracking (Paid)
