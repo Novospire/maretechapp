@@ -32,4 +32,4 @@ See: /docs/00-context/Operating-Protocol.md
 
 ## Current status
 - MVP: in definition
-- Next docs to produce: AI-Pipeline.md, System-Overview.md, Repo skeleton templates
+- Next docs to produce: Repo skeleton templates
