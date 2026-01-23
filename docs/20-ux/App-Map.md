@@ -104,6 +104,7 @@ Subscription options displayed.
 - Timeline view
 - Comparison view (side-by-side)
 - Trend indicators (improving / stable / worsening)
+- Follow-up Capture (P1): ghost overlay to match prior frame per slot
 
 ---
 
