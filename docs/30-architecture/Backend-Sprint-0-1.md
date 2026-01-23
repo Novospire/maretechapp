@@ -1,5 +1,5 @@
 # Backend Sprint 0/1 — Ticket Map (v1.0)
-Commit baseline: a512b9c
+Commit baseline: 3b70a50
 
 ## Goals (locked)
 - Auth gate before inspections
