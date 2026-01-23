@@ -90,9 +90,17 @@ Acceptance:
 
 ### UI-031 Corrosion Capture Guide
 - Same rigor as paid flow
+- Capture slots are driven by “capture policy” for corrosion
+- Free tier limit: up to 5 points (each point has 3 required angles)
+- Explain that points > 5 require subscription
 
 ### UI-032 Corrosion Capture Screen
 - Camera + quality enforcement
+- Display point counter (e.g., 1/5 free)
+- Enforce required angles per point (3 slots)
+- If user attempts to add point 6:
+  - Show paywall (UI-035)
+  - Do not allow creating additional slots unless subscribed
 
 ### UI-032a Corrosion Follow-up Capture Alignment (P1)
 
