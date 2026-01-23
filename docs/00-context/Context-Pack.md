@@ -74,7 +74,6 @@ Mobile → Presigned Upload → Queue → Inference → Result Store → Timelin
 ### Capture & model
 - Minimum photo set requirements per mode (how many, which angles, quality rules)
 - Confidence thresholds and wording per mode (what qualifies as SUSPECT vs CLEAR, etc.)
-- Minimum photo set requirements per mode (how many, which angles, quality rules)
 - Interim MVP default will be defined via capture-policy config (see ADR 0001)
 
 ### Product operations
