@@ -23,6 +23,18 @@ Status: MVP build tickets
 - Accept & continue CTA
 - Must be shown once per install
 
+### UI-003 Authentication Gate (Required)
+
+- Sign in (email + password)
+- Create account
+- Forgot password (link / code)
+- Session restore (auto-login if token valid)
+- Logout (in Settings)
+
+Acceptance:
+- User cannot start an inspection flow without being authenticated.
+- If user launches app already authenticated, skip to Mode Selection.
+
 ---
 
 ## TICKET GROUP 1 — Mode Selection
