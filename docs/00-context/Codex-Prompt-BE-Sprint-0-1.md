@@ -1,6 +1,6 @@
 # Codex Prompt — Backend Sprint 0/1 (v1.0)
 Repo: Novospire/maretechapp
-Baseline commit: a512b9c
+Baseline commit: 3b70a50
 
 You MUST follow repo docs as source of truth:
 - /docs/00-context/Context-Pack.md
