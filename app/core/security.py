@@ -10,7 +10,10 @@ import jwt
 
 
 def _get_secret() -> str:
-    return os.getenv("MARETECH_JWT_SECRET", "dev-secret-change-me")
+    secret = os.getenv("MARETECH_JWT_SECRET")
+    if not secret:
+        raise RuntimeError("MARETECH_JWT_SECRET is required for JWT operations")
+    return secret
 
 
 def hash_password(password: str) -> str:

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Set
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
@@ -36,4 +38,4 @@ def get_current_user(
     return user
 
 
-token_revocation_list: set[str] = set()
+token_revocation_list: Set[str] = set()
