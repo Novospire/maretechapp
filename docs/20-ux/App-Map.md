@@ -7,6 +7,9 @@ Status: Draft (UX baseline)
 ### App Entry
 - Splash
 - Legal disclaimer (non-binding, not a survey)
+- Authentication (Sign in / Create account)
+  - If already signed in: skip
+  - Required before Mode Selection (ties inspections, purchases, subscription to user)
 - Continue
 
 ### Mode Selection (Critical Fork)
