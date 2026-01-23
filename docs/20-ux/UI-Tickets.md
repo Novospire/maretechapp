@@ -94,6 +94,18 @@ Acceptance:
 ### UI-032 Corrosion Capture Screen
 - Camera + quality enforcement
 
+### UI-032a Corrosion Follow-up Capture Alignment (P1)
+
+- If a previous inspection exists:
+  - Show “ghost overlay” of the corresponding photo slot from previous inspection
+  - Toggle on/off
+  - Opacity slider (optional)
+- If no previous slot photo exists: no overlay
+
+Acceptance:
+- Overlay is only available for follow-up inspections (not first).
+- Overlay never mixes modes (corrosion-only).
+
 ### UI-033 Corrosion Processing
 - Async processing screen
 
