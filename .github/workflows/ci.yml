@@ -9,6 +9,9 @@ on:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
+      MARETECH_JWT_SECRET: test-secret
     steps:
       - name: Checkout
         uses: actions/checkout@v4
