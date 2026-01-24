@@ -5,6 +5,7 @@ import hmac
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
+from uuid import uuid4
 
 import jwt
 
@@ -33,6 +34,7 @@ def create_access_token(subject: str, expires_in_minutes: int = 60) -> str:
         "sub": subject,
         "iat": int(now.timestamp()),
         "exp": int((now + timedelta(minutes=expires_in_minutes)).timestamp()),
+        "jti": uuid4().hex,
     }
     return jwt.encode(payload, _get_secret(), algorithm="HS256")
 
