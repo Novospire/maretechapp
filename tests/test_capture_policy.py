@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from uuid import uuid4
+
 from fastapi.testclient import TestClient
 
 from app.main import create_app
@@ -11,7 +13,7 @@ def _create_client():
 
 
 def _register_and_get_token(client: TestClient) -> str:
-    register_payload = {"email": "policy@example.com", "password": "password123"}
+    register_payload = {"email": f"policy+{uuid4()}@example.com", "password": "password123"}
     register_response = client.post("/auth/register", json=register_payload)
     assert register_response.status_code == 201
     return register_response.json()["token"]["access_token"]
