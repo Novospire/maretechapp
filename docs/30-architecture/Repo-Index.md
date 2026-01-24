@@ -6,6 +6,8 @@ Status: Start-here (source-of-truth navigation)
 - /docs/00-context/Context-Pack.md
 - /docs/00-context/Operating-Protocol.md
 - /adr/ (decision log)
+- /docs/60-delivery/Definition-of-Done.md
+- /docs/60-delivery/Done-Log.md
 
 ## 1) Current sprint execution (Codex entry)
 - /docs/30-architecture/Backend-Sprint-0-1.md
