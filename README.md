@@ -57,7 +57,7 @@ export MARETECH_PASSWORD_SALT="change-me-too"
 ### Install & Run
 ```bash
 pip install -r requirements.txt
-uvicorn app.main:app --reload
+MARETECH_JWT_SECRET=test-secret uvicorn app.main:app --reload
 ```
 
 ### Run Tests
