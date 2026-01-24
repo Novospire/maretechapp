@@ -18,6 +18,7 @@ def test_auth_smoke_flow(monkeypatch):
     login_response = client.post("/auth/login", json=register_payload)
     assert login_response.status_code == 200
     token = login_response.json()["token"]["access_token"]
+    assert register_token != token
 
     me_response = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me_response.status_code == 200
