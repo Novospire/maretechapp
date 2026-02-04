@@ -15,3 +15,5 @@ Collect consistent, high-signal photos for non-binding detection. Not a diagnost
 
 ## Metadata
 Device and app version may be recorded to improve quality over time.
+**Privacy (Phase-1):** We do not collect background location (GSM/GPS) or weather data in Phase-1. Manual context (e.g., marina/region, approximate conditions) is optional. (ADR-0003)
+
