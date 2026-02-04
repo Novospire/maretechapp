@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.security import create_access_token, hash_password, verify_password
 from app.core.store import InMemoryUserStore
-from app.dependencies import bearer_scheme, get_current_user, get_user_store, token_revocation_list
+from app.dependencies import (
+    bearer_scheme,
+    get_current_user,
+    get_token_revocation_list,
+    get_user_store,
+)
 from app.schemas import AuthResponse, Token, UserCreate, UserLogin, UserOut
 
 
@@ -31,7 +36,11 @@ async def login(payload: UserLogin, store: InMemoryUserStore = Depends(get_user_
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(credentials=Depends(bearer_scheme), current_user=Depends(get_current_user)):
+async def logout(
+    credentials=Depends(bearer_scheme),
+    current_user=Depends(get_current_user),
+    token_revocation_list=Depends(get_token_revocation_list),
+):
     token_revocation_list.add(credentials.credentials)
     return None
 
