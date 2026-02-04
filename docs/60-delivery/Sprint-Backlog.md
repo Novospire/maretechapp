@@ -1,8 +1,6 @@
 # Sprint Backlog — Maretech App
-Version: v1.0  
+Version: v1.0
 Status: MVP execution plan
-
----
 
 ## Sprint 0 — Project Setup & Guardrails
 Goal: Build can start without rework.
@@ -17,8 +15,6 @@ Deliverable:
 - Running backend skeleton
 - Empty mobile shell
 - CI checks passing
-
----
 
 ## Sprint 1 — Inspection Core (Shared)
 Goal: One inspection can be created, uploaded, queued, and completed.
@@ -38,7 +34,8 @@ Mobile:
 Deliverable:
 - End-to-end inspection lifecycle (no AI yet)
 
----
+### Planned (Sprint 1.x / Phase-1.5)
+- BE-0xz Capture metadata (minimal) — status: planned
 
 ## Sprint 2 — Osmosis (Paid Flow)
 Goal: Paid osmosis inspection works end-to-end.
@@ -58,8 +55,6 @@ AI:
 
 Deliverable:
 - One paid osmosis inspection producing result
-
----
 
 ## Sprint 3 — Corrosion (Free + Subscription)
 Goal: Corrosion flow with tracking gate.
@@ -81,8 +76,6 @@ Deliverable:
 - Free corrosion result
 - Paid tracking unlocked
 
----
-
 ## Sprint 4 — Comparison & Trend
 Goal: Show value of “memory + trend”.
 
@@ -96,8 +89,6 @@ Mobile:
 
 Deliverable:
 - Visual comparison experience
-
----
 
 ## Sprint 5 — Hardening & Release Prep
 Goal: Ship-ready MVP.
