@@ -1,16 +1,12 @@
 # Backend Tickets — Maretech App
-Version: v1.0  
+Version: v1.0
 Status: MVP backend implementation plan
-
----
 
 ## GLOBAL RULES
 - Mode isolation is enforced at data + wording level
 - AI is async only (never block request threads)
 - Idempotency for create/complete flows
-- Store `model_version` with every result
-
----
+- Store model_version with every result
 
 ## BE-000 Setup & Skeleton
 - Create backend project scaffold
@@ -22,16 +18,12 @@ Acceptance:
 - Server runs locally
 - /health returns ok
 
----
-
 ## BE-010 Auth Middleware (JWT)
 - Validate bearer token
 - Attach user_id to request context
 
 Acceptance:
 - Protected routes reject missing/invalid tokens
-
----
 
 ## BE-020 Create Inspection Session
 Implements: POST /inspections
@@ -45,8 +37,6 @@ Acceptance:
 - Returns inspection_id + upload_urls + expires_at
 - Mode cannot be changed after creation
 
----
-
 ## BE-030 Complete Upload
 Implements: POST /inspections/{id}/complete
 
@@ -58,8 +48,6 @@ Acceptance:
 - Returns status: queued
 - Idempotent: repeated calls do not create duplicate jobs
 
----
-
 ## BE-040 Get Inspection Status
 Implements: GET /inspections/{id}
 
@@ -67,8 +55,6 @@ Implements: GET /inspections/{id}
 
 Acceptance:
 - Status reflects job state transitions
-
----
 
 ## BE-050 Get Inspection Result
 Implements: GET /inspections/{id}/result
@@ -79,8 +65,6 @@ Implements: GET /inspections/{id}/result
 Acceptance:
 - Contract matches API-Spec.md
 
----
-
 ## BE-060 Inference Stub Worker (MVP)
 - Implement worker that consumes queued jobs
 - For now: produce deterministic mocked outputs per mode
@@ -88,8 +72,6 @@ Acceptance:
 
 Acceptance:
 - End-to-end flow works without real AI
-
----
 
 ## BE-070 Payments Validate (Osmosis)
 Implements: POST /payments/validate
@@ -101,8 +83,6 @@ Implements: POST /payments/validate
 Acceptance:
 - Osmosis inspection creation is blocked unless payment valid
 
----
-
 ## BE-080 Subscriptions Status (Corrosion)
 Implements: GET /subscriptions/status
 
@@ -112,8 +92,6 @@ Implements: GET /subscriptions/status
 Acceptance:
 - Corrosion tracking endpoints are blocked unless active=true
 
----
-
 ## BE-090 Corrosion History
 Implements: GET /corrosion/history
 
@@ -122,8 +100,6 @@ Implements: GET /corrosion/history
 
 Acceptance:
 - Non-subscribed users get 403
-
----
 
 ## BE-100 Corrosion Compare
 Implements: GET /corrosion/compare?from=&to=
@@ -135,11 +111,18 @@ Acceptance:
 - Returns trend string
 - 400 on invalid ids/mode mismatch
 
----
-
 ## BE-110 Error Handling Standard
 - Standard error response format
 - Map common errors (401/403/404/400/500)
 
 Acceptance:
 - Errors match API-Spec.md shape
+
+## BE-0xz Capture metadata (minimal)
+Status: planned (Phase-1.5 / Sprint 1.x)
+
+- Add optional CaptureMeta fields (device_model, os_name, os_version, app_version, captured_at)
+- Accept metadata optionally in inspection/capture payload (no breaking change)
+- Persist metadata with capture event/record (even if in-memory for now)
+- Tests cover with/without metadata
+- CI stays green
