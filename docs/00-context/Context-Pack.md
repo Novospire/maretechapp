@@ -75,6 +75,7 @@ Mobile → Presigned Upload → Queue → Inference → Result Store → Timelin
 - Minimum photo set requirements per mode (how many, which angles, quality rules)
 - Confidence thresholds and wording per mode (what qualifies as SUSPECT vs CLEAR, etc.)
 - Interim MVP default will be defined via capture-policy config (see ADR 0001)
+- **Phase-1 note:** We do not collect passive/background location (GSM/GPS) or weather/environment data in Phase-1. Only images + optional user-entered context are used. (ADR-0003)
 
 ### Product operations
 - Re-check timing logic defaults per mode (recommended windows and triggers)
