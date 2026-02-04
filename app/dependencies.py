@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Set
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
 
@@ -12,15 +12,18 @@ from app.core.store import InMemoryUserStore
 
 bearer_scheme = HTTPBearer()
 
-def get_user_store() -> InMemoryUserStore:
-    from app.main import user_store
+def get_user_store(request: Request) -> InMemoryUserStore:
+    return request.app.state.user_store
 
-    return user_store
+
+def get_token_revocation_list(request: Request) -> Set[str]:
+    return request.app.state.token_revocation_list
 
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     store: InMemoryUserStore = Depends(get_user_store),
+    token_revocation_list: Set[str] = Depends(get_token_revocation_list),
 ):
     token = credentials.credentials
     if token in token_revocation_list:
@@ -36,6 +39,3 @@ def get_current_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
     return user
-
-
-token_revocation_list: Set[str] = set()
