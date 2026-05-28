@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI
 
-from app.api import auth, capture_policy
+from app.api import auth, capture_policy, health
 from app.core.store import InMemoryUserStore
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger("maretech")
 
 def create_app(user_store: InMemoryUserStore | None = None) -> FastAPI:
     app = FastAPI(title="Maretech API", version="0.1.0")
     app.state.user_store = user_store or InMemoryUserStore()
     app.state.token_revocation_list = set()
+    app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(capture_policy.router)
+    logger.info("Maretech API application created")
     return app
 
 
