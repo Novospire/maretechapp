@@ -26,3 +26,13 @@ class Token(BaseModel):
 class AuthResponse(BaseModel):
     user: UserOut
     token: Token
+
+
+class InspectionCreate(BaseModel):
+    mode: str = Field(..., pattern=r"^(osmosis|corrosion)$")
+
+
+class InspectionCreated(BaseModel):
+    inspection_id: str
+    upload_urls: list[str]
+    expires_at: str
