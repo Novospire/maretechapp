@@ -4,9 +4,9 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from app.core.store import InMemoryInspectionStore, InMemoryPaymentStore, StoredUser
-from app.dependencies import get_current_user, get_inspection_store, get_payment_store
-from app.schemas import InspectionCreate, InspectionCreated
+from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, StoredUser
+from app.dependencies import get_current_user, get_inspection_store, get_payment_store, get_job_queue
+from app.schemas import InspectionCreate, InspectionCreated, CompleteResponse
 
 
 router = APIRouter(prefix="/inspections", tags=["inspections"])
@@ -64,3 +64,27 @@ async def create_inspection(
     )
 
     return _build_response(inspection.id, inspection.created_at)
+
+
+@router.post("/{inspection_id}/complete", response_model=CompleteResponse)
+async def complete_upload(
+    inspection_id: str,
+    current_user: StoredUser = Depends(get_current_user),
+    inspection_store: InMemoryInspectionStore = Depends(get_inspection_store),
+    job_queue: InMemoryJobQueue = Depends(get_job_queue),
+):
+    inspection = inspection_store.get_by_id(inspection_id)
+    if not inspection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found")
+
+    if inspection.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    # Mark upload complete internally by updating status
+    inspection.status = "queued"
+
+    # Enqueue job
+    job_queue.enqueue(inspection_id=inspection.id, user_id=current_user.id, mode=inspection.mode)
+
+    return CompleteResponse(status="queued")
+

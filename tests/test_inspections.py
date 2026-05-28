@@ -173,3 +173,134 @@ def test_different_mode_creates_separate_inspection(monkeypatch):
     resp_osmosis = client.post("/inspections", json={"mode": "osmosis"}, headers=headers)
     assert resp_osmosis.status_code == 201
     assert resp_osmosis.json()["inspection_id"] != resp_corrosion.json()["inspection_id"]
+
+
+# ---------- BE-030: Complete Upload Tests ----------
+
+def test_complete_upload_unauthenticated(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, _ = _create_client()
+    resp = client.post(f"/inspections/{uuid4()}/complete")
+    assert resp.status_code in {401, 403}
+
+
+def test_complete_upload_non_existent(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, _ = _create_client()
+    token, _ = _register_and_get_token(client)
+    resp = client.post(
+        f"/inspections/{uuid4()}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+def test_complete_upload_other_user(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token_a, user_id_a = _register_and_get_token(client)
+    token_b, _ = _register_and_get_token(client)
+
+    # Create inspection for A
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token_a}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # B tries to complete A's inspection
+    resp_complete = client.post(
+        f"/inspections/{inspection_id}/complete",
+        headers={"Authorization": f"Bearer {token_b}"},
+    )
+    assert resp_complete.status_code == 403
+
+
+def test_complete_upload_success(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Complete
+    resp_complete = client.post(
+        f"/inspections/{inspection_id}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_complete.status_code == 200
+    assert resp_complete.json() == {"status": "queued"}
+
+    # Verify state in store
+    stored = app.state.inspection_store.get_by_id(inspection_id)
+    assert stored.status == "queued"
+
+
+def test_complete_upload_idempotent(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Complete once
+    resp1 = client.post(
+        f"/inspections/{inspection_id}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp1.status_code == 200
+    assert resp1.json() == {"status": "queued"}
+
+    # Complete twice
+    resp2 = client.post(
+        f"/inspections/{inspection_id}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp2.status_code == 200
+    assert resp2.json() == {"status": "queued"}
+
+    # Check job queue size or count of jobs
+    assert len(app.state.job_queue._jobs) == 1
+
+
+def test_complete_upload_queue_record_fields(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, user_id = _register_and_get_token(client)
+
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Complete
+    resp_complete = client.post(
+        f"/inspections/{inspection_id}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_complete.status_code == 200
+
+    # Get job from queue
+    job = app.state.job_queue.get_by_inspection_id(inspection_id)
+    assert job is not None
+    assert job.inspection_id == inspection_id
+    assert job.user_id == user_id
+    assert job.mode == "corrosion"
+

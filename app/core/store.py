@@ -85,3 +85,28 @@ class InMemoryPaymentStore:
 
     def is_payment_valid(self, user_id: str) -> bool:
         return self._valid_users.get(user_id, False)
+
+
+@dataclass
+class QueuedJob:
+    inspection_id: str
+    user_id: str
+    mode: str
+
+
+class InMemoryJobQueue:
+    """Minimal in-memory job queue for inspection processing."""
+
+    def __init__(self) -> None:
+        self._jobs: Dict[str, QueuedJob] = {}  # keyed by inspection_id
+
+    def enqueue(self, inspection_id: str, user_id: str, mode: str) -> QueuedJob:
+        """Enqueue a job. Idempotent: returns existing job if already enqueued."""
+        if inspection_id in self._jobs:
+            return self._jobs[inspection_id]
+        job = QueuedJob(inspection_id=inspection_id, user_id=user_id, mode=mode)
+        self._jobs[inspection_id] = job
+        return job
+
+    def get_by_inspection_id(self, inspection_id: str) -> Optional[QueuedJob]:
+        return self._jobs.get(inspection_id)

@@ -36,3 +36,7 @@ class InspectionCreated(BaseModel):
     inspection_id: str
     upload_urls: list[str]
     expires_at: str
+
+
+class CompleteResponse(BaseModel):
+    status: str
