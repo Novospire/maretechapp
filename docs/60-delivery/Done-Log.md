@@ -10,4 +10,7 @@
 - ✅ BE-010 Auth Middleware — verified by gap review; no new implementation PR required
 - ✅ BE-020 Create Inspection Session — merged (PR #23) — main@HEAD: f85c7b669c0e814cc655fbb10c3bd1ce5466a9b7
 - ✅ BE-030 Complete Upload & Queueing — merged (PR #26) — main@HEAD: b663fccccc68d910cc7e92cc5d354361e6872260
+- ✅ BE-040 Inspection Status — merged (PR #28) — main@HEAD: 388e614b922f493846f28183c30ec450d30a3f28
+  - Follow-up: internal `queued` status is currently mapped to public `pending`; revisit lifecycle mapping during BE-060.
+
 
