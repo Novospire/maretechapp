@@ -9,3 +9,5 @@
 - ✅ BE-000 Setup & Skeleton — merged (PR #21) — main@HEAD: abad338027ebc2a13688b85bd6e72bad60afdf04
 - ✅ BE-010 Auth Middleware — verified by gap review; no new implementation PR required
 - ✅ BE-020 Create Inspection Session — merged (PR #23) — main@HEAD: f85c7b669c0e814cc655fbb10c3bd1ce5466a9b7
+- ✅ BE-030 Complete Upload & Queueing — merged (PR #26) — main@HEAD: b663fccccc68d910cc7e92cc5d354361e6872260
+
