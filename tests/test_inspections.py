@@ -304,3 +304,123 @@ def test_complete_upload_queue_record_fields(monkeypatch):
     assert job.user_id == user_id
     assert job.mode == "corrosion"
 
+
+# ---------- BE-040: Get Inspection Status Tests ----------
+
+def test_get_status_unauthenticated(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, _ = _create_client()
+    resp = client.get(f"/inspections/{uuid4()}")
+    assert resp.status_code in {401, 403}
+
+
+def test_get_status_non_existent(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, _ = _create_client()
+    token, _ = _register_and_get_token(client)
+    resp = client.get(
+        f"/inspections/{uuid4()}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+def test_get_status_other_user(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token_a, user_id_a = _register_and_get_token(client)
+    token_b, _ = _register_and_get_token(client)
+
+    # Create inspection for A
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token_a}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # B tries to read A's inspection status
+    resp_status = client.get(
+        f"/inspections/{inspection_id}",
+        headers={"Authorization": f"Bearer {token_b}"},
+    )
+    assert resp_status.status_code == 403
+
+
+def test_get_status_owner_new(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, user_id = _register_and_get_token(client)
+
+    # Create inspection
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Read status
+    resp_status = client.get(
+        f"/inspections/{inspection_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_status.status_code == 200
+    data = resp_status.json()
+    assert data["inspection_id"] == inspection_id
+    assert data["status"] == "pending"
+    
+    # Verify response contains only API-spec fields: status, inspection_id
+    assert set(data.keys()) == {"inspection_id", "status"}
+
+
+def test_get_status_owner_after_upload_completion(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, user_id = _register_and_get_token(client)
+
+    # Create inspection
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Complete upload
+    resp_complete = client.post(
+        f"/inspections/{inspection_id}/complete",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_complete.status_code == 200
+
+    # Get status reflecting queued state in store (mapped to pending)
+    resp_status = client.get(
+        f"/inspections/{inspection_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_status.status_code == 200
+    data = resp_status.json()
+    assert data["inspection_id"] == inspection_id
+    assert data["status"] == "pending"
+    assert set(data.keys()) == {"inspection_id", "status"}
+
+    # Verify that if we manually set store status to "processing", "completed", "failed", it is reflected
+    stored = app.state.inspection_store.get_by_id(inspection_id)
+    
+    stored.status = "processing"
+    resp_p = client.get(f"/inspections/{inspection_id}", headers={"Authorization": f"Bearer {token}"})
+    assert resp_p.json()["status"] == "processing"
+
+    stored.status = "completed"
+    resp_c = client.get(f"/inspections/{inspection_id}", headers={"Authorization": f"Bearer {token}"})
+    assert resp_c.json()["status"] == "completed"
+
+    stored.status = "failed"
+    resp_f = client.get(f"/inspections/{inspection_id}", headers={"Authorization": f"Bearer {token}"})
+    assert resp_f.json()["status"] == "failed"
+
+
