@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Dict, Optional
 from uuid import uuid4
+
+IDEMPOTENCY_WINDOW_SECONDS = 300  # 5 minutes
 
 
 @dataclass
@@ -28,3 +31,57 @@ class InMemoryUserStore:
         self._users_by_email[user.email] = user
         self._users_by_id[user.id] = user
         return user
+
+
+@dataclass
+class StoredInspection:
+    id: str
+    user_id: str
+    mode: str
+    status: str
+    created_at: str
+
+
+class InMemoryInspectionStore:
+    def __init__(self) -> None:
+        self._inspections: Dict[str, StoredInspection] = {}
+
+    def create(self, user_id: str, mode: str, created_at: str) -> StoredInspection:
+        inspection = StoredInspection(
+            id=str(uuid4()),
+            user_id=user_id,
+            mode=mode,
+            status="pending",
+            created_at=created_at,
+        )
+        self._inspections[inspection.id] = inspection
+        return inspection
+
+    def get_by_id(self, inspection_id: str) -> Optional[StoredInspection]:
+        return self._inspections.get(inspection_id)
+
+    def find_recent(self, user_id: str, mode: str, now: datetime) -> Optional[StoredInspection]:
+        """Return an existing pending inspection for user+mode within the idempotency window."""
+        cutoff = now.timestamp() - IDEMPOTENCY_WINDOW_SECONDS
+        for insp in self._inspections.values():
+            if (
+                insp.user_id == user_id
+                and insp.mode == mode
+                and insp.status == "pending"
+                and datetime.fromisoformat(insp.created_at).timestamp() >= cutoff
+            ):
+                return insp
+        return None
+
+
+class InMemoryPaymentStore:
+    """Minimal per-user payment status flag for gating osmosis inspections."""
+
+    def __init__(self) -> None:
+        self._valid_users: Dict[str, bool] = {}
+
+    def set_payment_valid(self, user_id: str, valid: bool = True) -> None:
+        self._valid_users[user_id] = valid
+
+    def is_payment_valid(self, user_id: str) -> bool:
+        return self._valid_users.get(user_id, False)

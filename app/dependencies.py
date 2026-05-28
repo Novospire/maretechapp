@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
 
 from app.core.security import decode_access_token
-from app.core.store import InMemoryUserStore
+from app.core.store import InMemoryInspectionStore, InMemoryPaymentStore, InMemoryUserStore
 
 
 bearer_scheme = HTTPBearer()
@@ -18,6 +18,14 @@ def get_user_store(request: Request) -> InMemoryUserStore:
 
 def get_token_revocation_list(request: Request) -> Set[str]:
     return request.app.state.token_revocation_list
+
+
+def get_inspection_store(request: Request) -> InMemoryInspectionStore:
+    return request.app.state.inspection_store
+
+
+def get_payment_store(request: Request) -> InMemoryPaymentStore:
+    return request.app.state.payment_store
 
 
 def get_current_user(
