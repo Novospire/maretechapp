@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, StoredUser
 from app.dependencies import get_current_user, get_inspection_store, get_payment_store, get_job_queue
-from app.schemas import InspectionCreate, InspectionCreated, CompleteResponse
+from app.schemas import InspectionCreate, InspectionCreated, CompleteResponse, InspectionStatusResponse
 
 
 router = APIRouter(prefix="/inspections", tags=["inspections"])
@@ -88,3 +88,26 @@ async def complete_upload(
 
     return CompleteResponse(status="queued")
 
+
+@router.get("/{inspection_id}", response_model=InspectionStatusResponse)
+async def get_inspection_status(
+    inspection_id: str,
+    current_user: StoredUser = Depends(get_current_user),
+    inspection_store: InMemoryInspectionStore = Depends(get_inspection_store),
+):
+    inspection = inspection_store.get_by_id(inspection_id)
+    if not inspection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found")
+
+    if inspection.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    # Map internal status to API Spec status
+    public_status = inspection.status
+    if public_status == "queued":
+        public_status = "pending"
+
+    return InspectionStatusResponse(
+        inspection_id=inspection.id,
+        status=public_status,
+    )

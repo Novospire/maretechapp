@@ -40,3 +40,9 @@ class InspectionCreated(BaseModel):
 
 class CompleteResponse(BaseModel):
     status: str
+
+
+class InspectionStatusResponse(BaseModel):
+    inspection_id: str
+    status: str
+
