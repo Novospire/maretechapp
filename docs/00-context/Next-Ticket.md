@@ -2,25 +2,17 @@
 
 ## Title
 
-Add Maretech-specific agent operating layer
+Select next controlled Maretech implementation ticket
 
 ## Goal
 
-Add short project-local files that help Claude Code, Codex and Antigravity work safely in the Maretech repo.
-
-This is a docs-only setup ticket.
+Define the next small implementation ticket after BE-040 and after the agent operating layer has been merged.
 
 ## Allowed Files
 
-* AGENTS.md
-* CLAUDE.md
-* docs/00-context/Current-State.md
 * docs/00-context/Next-Ticket.md
-* docs/00-context/Agent-Operating-Protocol.md
-* docs/00-context/Design-Reference.md
-* .claude/commands/repo-safety.md
-* .claude/commands/challenge.md
-* .claude/commands/pr-review.md
+* docs/00-context/Current-State.md
+* docs/60-delivery/Done-Log.md if needed
 
 ## Forbidden Files
 
@@ -33,17 +25,14 @@ This is a docs-only setup ticket.
 * deployment files
 * package files
 * .env files
-* README.md unless explicitly approved
-* existing architecture/product docs unless explicitly approved
 
 ## Acceptance Criteria
 
-* Agent operating layer files are added.
-* PR remains docs-only.
-* No application code changes.
-* No generated/local files committed.
-* Maretech non-negotiables are clearly visible to agents.
-* App and marketing site workstreams remain separated.
+* Next implementation ticket is clearly selected.
+* Scope is small.
+* Allowed/forbidden files are clear.
+* Verification commands are defined.
+* Maretech non-negotiables remain visible.
 
 ## Verification Commands
 
@@ -57,7 +46,7 @@ git diff --name-only
 
 * Existing backend/API work is not part of this ticket.
 * Existing technical debt is not part of this ticket.
-* Local **pycache** files must be removed or ignored before commit.
+* Local `__pycache__` files must be removed or ignored before commit.
 
 ## Stop Conditions
 
