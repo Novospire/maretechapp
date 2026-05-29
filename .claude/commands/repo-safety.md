@@ -17,7 +17,7 @@ Report:
 Maretech-specific checks:
 
 * no generated/local files should be committed
-* no **pycache** files should be present
+* no `__pycache__` files should be present
 * docs-only tickets must not touch app/, tests/, backend/API, auth, database, deployment or package files
 * Maretech non-negotiables must remain intact
 

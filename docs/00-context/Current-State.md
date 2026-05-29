@@ -44,7 +44,7 @@ This PR adds the Maretech-specific agent operating layer.
 
 ## Known Warnings / Non-Blockers
 
-* Python **pycache** folders may appear locally.
+* Python `__pycache__` folders may appear locally.
 * They must not be committed.
 * Existing technical debt should not be fixed in this PR.
 

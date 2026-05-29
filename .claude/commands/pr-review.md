@@ -23,7 +23,7 @@ Maretech-specific checks:
 * app and marketing site workstreams remain separate
 * async-only inference assumption is not weakened
 * no generated/local files included
-* no **pycache** files included
+* no `__pycache__` files included
 
 Return:
 
