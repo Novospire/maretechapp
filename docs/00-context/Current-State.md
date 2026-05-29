@@ -6,11 +6,11 @@ Branch: main
 
 Last confirmed commit:
 
-d8cb11e docs: update done log for BE-040 (#29)
+58ed323 docs: add Maretech agent operating layer (#30)
 
 Current working branch:
 
-docs/agent-operating-layer
+docs/update-agent-layer-state
 
 ## Current Status
 
@@ -25,7 +25,7 @@ Existing source-of-truth files include:
 * docs/60-delivery/Definition-of-Done.md
 * docs/60-delivery/Done-Log.md
 
-This PR adds the Maretech-specific agent operating layer.
+The repo is now ready for the next controlled implementation ticket.
 
 ## Completed
 
@@ -35,12 +35,11 @@ This PR adds the Maretech-specific agent operating layer.
 * Operating Protocol exists.
 * Done Log has been updated through BE-040.
 * Central AI Delivery Operating Protocol repo has been created separately.
+* Maretech-specific agent operating layer added.
 
 ## In Progress
 
-* Add Maretech-specific agent operating files.
-* Keep this PR docs-only.
-* Prepare repo for safer Claude Code / Codex / Antigravity handoffs.
+* Select next controlled implementation ticket.
 
 ## Known Warnings / Non-Blockers
 
@@ -53,19 +52,7 @@ This PR adds the Maretech-specific agent operating layer.
 * Mixing app and marketing site workstreams.
 * Weakening Osmosis / Corrosion product separation.
 * Accidentally introducing diagnosis or survey-replacement language.
-* Letting AI agents touch backend/API/deployment files during docs setup.
-* Expanding this docs PR into implementation work.
 
 ## Next Recommended Ticket
 
-Add Maretech-specific agent operating layer files:
-
-* AGENTS.md
-* CLAUDE.md
-* docs/00-context/Current-State.md
-* docs/00-context/Next-Ticket.md
-* docs/00-context/Agent-Operating-Protocol.md
-* docs/00-context/Design-Reference.md
-* .claude/commands/repo-safety.md
-* .claude/commands/challenge.md
-* .claude/commands/pr-review.md
+Select next controlled Maretech implementation ticket.
