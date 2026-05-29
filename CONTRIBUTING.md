@@ -37,7 +37,7 @@ Do not commit:
 
 * .env files
 * secrets
-* **pycache**
+* `__pycache__`
 * node_modules
 * build outputs
 * local backup files
