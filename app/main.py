@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI
 
 from app.api import auth, capture_policy, health, inspections
-from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, InMemoryUserStore
+from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, InMemoryResultStore, InMemoryUserStore
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,6 +19,7 @@ def create_app(user_store: InMemoryUserStore | None = None) -> FastAPI:
     app.state.inspection_store = InMemoryInspectionStore()
     app.state.payment_store = InMemoryPaymentStore()
     app.state.job_queue = InMemoryJobQueue()
+    app.state.result_store = InMemoryResultStore()
     app.state.token_revocation_list = set()
     app.include_router(health.router)
     app.include_router(auth.router)

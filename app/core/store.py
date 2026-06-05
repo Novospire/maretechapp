@@ -110,3 +110,28 @@ class InMemoryJobQueue:
 
     def get_by_inspection_id(self, inspection_id: str) -> Optional[QueuedJob]:
         return self._jobs.get(inspection_id)
+
+
+@dataclass
+class StoredResult:
+    inspection_id: str
+    mode: str
+    signal_detected: str
+    confidence_level: str
+    guidance: list
+    model_version: str
+    created_at: str
+
+
+class InMemoryResultStore:
+    """Minimal in-memory result store for completed inspection results."""
+
+    def __init__(self) -> None:
+        self._results: Dict[str, StoredResult] = {}  # keyed by inspection_id
+
+    def save(self, result: StoredResult) -> StoredResult:
+        self._results[result.inspection_id] = result
+        return result
+
+    def get_by_inspection_id(self, inspection_id: str) -> Optional[StoredResult]:
+        return self._results.get(inspection_id)

@@ -7,7 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import InvalidTokenError
 
 from app.core.security import decode_access_token
-from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, InMemoryUserStore
+from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, InMemoryResultStore, InMemoryUserStore
 
 
 bearer_scheme = HTTPBearer()
@@ -30,6 +30,10 @@ def get_payment_store(request: Request) -> InMemoryPaymentStore:
 
 def get_job_queue(request: Request) -> InMemoryJobQueue:
     return request.app.state.job_queue
+
+
+def get_result_store(request: Request) -> InMemoryResultStore:
+    return request.app.state.result_store
 
 
 def get_current_user(
