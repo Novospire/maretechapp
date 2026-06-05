@@ -111,6 +111,11 @@ class InMemoryJobQueue:
     def get_by_inspection_id(self, inspection_id: str) -> Optional[QueuedJob]:
         return self._jobs.get(inspection_id)
 
+    def pop_by_inspection_id(self, inspection_id: str) -> Optional[QueuedJob]:
+        """Remove and return the job by inspection_id, consuming it."""
+        return self._jobs.pop(inspection_id, None)
+
+
 
 @dataclass
 class StoredResult:
