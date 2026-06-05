@@ -13,4 +13,12 @@
 - ✅ BE-040 Inspection Status — merged (PR #28) — main@HEAD: 388e614b922f493846f28183c30ec450d30a3f28
   - Follow-up: internal `queued` status is currently mapped to public `pending`; revisit lifecycle mapping during BE-060.
 
+## 2026-06-05
+
+* ✅ BE-050 Inspection Result — merged (PR #32) — main@HEAD: 5bbd5883a52cb2afadab789362c8ceb4b7b897ef
+  * Follow-up: BE-060 must connect queued jobs to processing/completed/failed lifecycle and populate persisted results from the inference stub worker.
+  * Follow-up: lifecycle integrity must be enforced: an inspection should not become `completed` before its result is persisted.
+  * Follow-up: current `queued` to public `pending` mapping remains unchanged and should be revisited during BE-060.
+
+
 
