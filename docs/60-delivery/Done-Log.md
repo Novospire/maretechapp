@@ -20,5 +20,17 @@
   * Follow-up: lifecycle integrity must be enforced: an inspection should not become `completed` before its result is persisted.
   * Follow-up: current `queued` to public `pending` mapping remains unchanged and should be revisited during BE-060.
 
+* ✅ BE-060 Inference Stub Worker — merged (PR #34) — main@HEAD: 620ea5a63d6136c34bd14e983f30c87f7da60e4e
+  * Completed: added inference stub worker with deterministic mocked outputs per mode.
+  * Completed: added queue consumption via `InMemoryJobQueue.pop_by_inspection_id()`.
+  * Completed: added `run_next_job(...)` safe worker entrypoint.
+  * Completed: result is persisted before inspection becomes `completed`.
+  * Completed: retry-safety/idempotency prevents overwriting existing completed results or changing `created_at`.
+  * Follow-up: real AI inference remains out of scope for MVP backend stubs.
+  * Follow-up: Celery/Redis production worker wiring remains future work.
+  * Follow-up: public status mapping still exposes internal `queued` as `pending`; revisit public `processing` visibility in a future lifecycle/API ticket.
+  * Follow-up: in-memory stores are not persistent and must later move to real database-backed storage.
+
+
 
 
