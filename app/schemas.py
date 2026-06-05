@@ -46,3 +46,13 @@ class InspectionStatusResponse(BaseModel):
     inspection_id: str
     status: str
 
+
+class InspectionResultResponse(BaseModel):
+    inspection_id: str
+    mode: str
+    signal_detected: str
+    confidence_level: str
+    guidance: list[str]
+    model_version: str
+    created_at: str
+

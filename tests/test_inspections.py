@@ -424,3 +424,187 @@ def test_get_status_owner_after_upload_completion(monkeypatch):
     assert resp_f.json()["status"] == "failed"
 
 
+# ---------- BE-050: Get Inspection Result Tests ----------
+
+from app.core.store import StoredResult
+
+
+def _seed_completed_inspection(client, app, token, mode="corrosion"):
+    """Helper: create an inspection, mark completed, seed a result. Returns inspection_id."""
+    resp = client.post(
+        "/inspections",
+        json={"mode": mode},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 201
+    inspection_id = resp.json()["inspection_id"]
+
+    # Set status to completed (simulates worker finishing)
+    stored = app.state.inspection_store.get_by_id(inspection_id)
+    stored.status = "completed"
+
+    # Seed a result
+    result = StoredResult(
+        inspection_id=inspection_id,
+        mode=mode,
+        signal_detected="yes",
+        confidence_level="medium",
+        guidance=["monitor", "recheck_later"],
+        model_version="stub-v0.1.0",
+        created_at="2026-06-05T12:00:00+00:00",
+    )
+    app.state.result_store.save(result)
+
+    return inspection_id
+
+
+def test_get_result_unauthenticated(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, _ = _create_client()
+    resp = client.get(f"/inspections/{uuid4()}/result")
+    assert resp.status_code in {401, 403}
+
+
+def test_get_result_non_existent(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, _ = _create_client()
+    token, _ = _register_and_get_token(client)
+    resp = client.get(
+        f"/inspections/{uuid4()}/result",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+
+
+def test_get_result_other_user(monkeypatch):
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token_a, _ = _register_and_get_token(client)
+    token_b, _ = _register_and_get_token(client)
+
+    inspection_id = _seed_completed_inspection(client, app, token_a)
+
+    # B tries to read A's result
+    resp = client.get(
+        f"/inspections/{inspection_id}/result",
+        headers={"Authorization": f"Bearer {token_b}"},
+    )
+    assert resp.status_code == 403
+
+
+def test_get_result_not_completed(monkeypatch):
+    """Inspection exists but is still pending — returns 409."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Status is still "pending" — do not set to completed
+    resp = client.get(
+        f"/inspections/{inspection_id}/result",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 409
+    assert "not available" in resp.json()["detail"].lower()
+
+
+def test_get_result_completed_but_no_result_stored(monkeypatch):
+    """Inspection marked completed but result store is empty — returns 404."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    resp_create = client.post(
+        "/inspections",
+        json={"mode": "corrosion"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp_create.status_code == 201
+    inspection_id = resp_create.json()["inspection_id"]
+
+    # Set status to completed but do NOT seed a result
+    stored = app.state.inspection_store.get_by_id(inspection_id)
+    stored.status = "completed"
+
+    resp = client.get(
+        f"/inspections/{inspection_id}/result",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 404
+    assert "result" in resp.json()["detail"].lower()
+
+
+def test_get_result_happy_path_corrosion(monkeypatch):
+    """Completed corrosion inspection with seeded result returns 200 + correct contract."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    inspection_id = _seed_completed_inspection(client, app, token, mode="corrosion")
+
+    resp = client.get(
+        f"/inspections/{inspection_id}/result",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["inspection_id"] == inspection_id
+    assert data["mode"] == "corrosion"
+    assert data["signal_detected"] == "yes"
+    assert data["confidence_level"] == "medium"
+    assert data["guidance"] == ["monitor", "recheck_later"]
+    assert data["model_version"] == "stub-v0.1.0"
+    assert data["created_at"] == "2026-06-05T12:00:00+00:00"
+
+
+def test_get_result_happy_path_osmosis(monkeypatch):
+    """Completed osmosis inspection with seeded result returns 200 + correct mode."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, user_id = _register_and_get_token(client)
+
+    # Osmosis requires payment
+    app.state.payment_store.set_payment_valid(user_id)
+
+    inspection_id = _seed_completed_inspection(client, app, token, mode="osmosis")
+
+    resp = client.get(
+        f"/inspections/{inspection_id}/result",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["inspection_id"] == inspection_id
+    assert data["mode"] == "osmosis"
+
+
+def test_get_result_response_field_contract(monkeypatch):
+    """Response keys must exactly match API-Spec.md § 3.4."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    inspection_id = _seed_completed_inspection(client, app, token, mode="corrosion")
+
+    resp = client.get(
+        f"/inspections/{inspection_id}/result",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    expected_keys = {
+        "inspection_id",
+        "mode",
+        "signal_detected",
+        "confidence_level",
+        "guidance",
+        "model_version",
+        "created_at",
+    }
+    assert set(resp.json().keys()) == expected_keys

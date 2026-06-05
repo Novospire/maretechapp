@@ -4,9 +4,9 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 
-from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, StoredUser
-from app.dependencies import get_current_user, get_inspection_store, get_payment_store, get_job_queue
-from app.schemas import InspectionCreate, InspectionCreated, CompleteResponse, InspectionStatusResponse
+from app.core.store import InMemoryInspectionStore, InMemoryJobQueue, InMemoryPaymentStore, InMemoryResultStore, StoredUser
+from app.dependencies import get_current_user, get_inspection_store, get_payment_store, get_job_queue, get_result_store
+from app.schemas import InspectionCreate, InspectionCreated, CompleteResponse, InspectionStatusResponse, InspectionResultResponse
 
 
 router = APIRouter(prefix="/inspections", tags=["inspections"])
@@ -110,4 +110,36 @@ async def get_inspection_status(
     return InspectionStatusResponse(
         inspection_id=inspection.id,
         status=public_status,
+    )
+
+
+@router.get("/{inspection_id}/result", response_model=InspectionResultResponse)
+async def get_inspection_result(
+    inspection_id: str,
+    current_user: StoredUser = Depends(get_current_user),
+    inspection_store: InMemoryInspectionStore = Depends(get_inspection_store),
+    result_store: InMemoryResultStore = Depends(get_result_store),
+):
+    inspection = inspection_store.get_by_id(inspection_id)
+    if not inspection:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Inspection not found")
+
+    if inspection.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+    if inspection.status != "completed":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Inspection result not available")
+
+    result = result_store.get_by_inspection_id(inspection_id)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Result not found")
+
+    return InspectionResultResponse(
+        inspection_id=result.inspection_id,
+        mode=result.mode,
+        signal_detected=result.signal_detected,
+        confidence_level=result.confidence_level,
+        guidance=result.guidance,
+        model_version=result.model_version,
+        created_at=result.created_at,
     )
