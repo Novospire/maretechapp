@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from app.core.store import (
     InMemoryInspectionStore,
     InMemoryResultStore,
+    InMemoryJobQueue,
     QueuedJob,
     StoredResult,
 )
@@ -77,6 +78,11 @@ def run_job(
     if inspection is None:
         raise ValueError(f"Inspection not found: {job.inspection_id}")
 
+    if inspection.status == "completed":
+        existing = result_store.get_by_inspection_id(job.inspection_id)
+        if existing is not None:
+            return existing
+
     mode = job.mode
     if mode not in _MOCK_OUTPUTS:
         inspection.status = "failed"
@@ -86,6 +92,7 @@ def run_job(
 
     # Transition to processing
     inspection.status = "processing"
+
 
     try:
         outputs = _MOCK_OUTPUTS[mode]
@@ -121,3 +128,31 @@ def run_job(
         inspection.status = "failed"
         logger.exception("Worker: job failed inspection_id=%s", job.inspection_id)
         raise
+
+
+def run_next_job(
+    job_queue: InMemoryJobQueue,
+    inspection_store: InMemoryInspectionStore,
+    result_store: InMemoryResultStore,
+    inspection_id: str,
+) -> StoredResult:
+    """Retrieve, consume/remove, and process the queued job for inspection_id in a safe way.
+
+    Preserves idempotency if the inspection has already been completed with an existing result.
+    """
+    # Check if already completed and result exists first (retry-safety)
+    inspection = inspection_store.get_by_id(inspection_id)
+    if inspection and inspection.status == "completed":
+        existing = result_store.get_by_inspection_id(inspection_id)
+        if existing is not None:
+            # If the job is still in the queue for some reason, clean it up
+            job_queue.pop_by_inspection_id(inspection_id)
+            return existing
+
+    # Retrieve and remove/consume the job from the queue
+    job = job_queue.pop_by_inspection_id(inspection_id)
+    if job is None:
+        raise ValueError(f"No queued job found for inspection_id: {inspection_id}")
+
+    return run_job(job, inspection_store, result_store)
+

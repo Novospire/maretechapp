@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 from uuid import uuid4
 
 from app.main import create_app
-from app.worker.inference_stub import run_job, STUB_MODEL_VERSION
+from app.worker.inference_stub import run_job, run_next_job, STUB_MODEL_VERSION
 from app.core.store import QueuedJob
 
 
@@ -385,3 +385,84 @@ def test_worker_marks_failed_if_inspection_not_found(monkeypatch):
 
     with pytest.raises(ValueError, match="Inspection not found"):
         run_job(missing_job, app.state.inspection_store, app.state.result_store)
+
+
+# ---------- 10) Job consumption and retry-safety tests ----------
+
+def test_run_next_job_consumes_and_pops(monkeypatch):
+    """Calling run_next_job consumes and removes the job from the queue."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    inspection_id = _complete_inspection(client, token, mode="corrosion")
+
+    # Verify job is initially queued
+    assert app.state.job_queue.get_by_inspection_id(inspection_id) is not None
+
+    # Run next job
+    result = run_next_job(
+        app.state.job_queue,
+        app.state.inspection_store,
+        app.state.result_store,
+        inspection_id,
+    )
+
+    assert result is not None
+    # Verify job is no longer in the queue
+    assert app.state.job_queue.get_by_inspection_id(inspection_id) is None
+
+
+def test_retry_run_completed_job_is_idempotent(monkeypatch):
+    """Running an already completed job does not overwrite the result or change created_at."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    client, app = _create_client()
+    token, _ = _register_and_get_token(client)
+
+    inspection_id = _complete_inspection(client, token, mode="corrosion")
+
+    # Run first time
+    result1 = run_next_job(
+        app.state.job_queue,
+        app.state.inspection_store,
+        app.state.result_store,
+        inspection_id,
+    )
+    first_created_at = result1.created_at
+
+    # Re-enqueue the same job manually (simulating a retry / re-delivery of the job)
+    app.state.job_queue.enqueue(
+        inspection_id=inspection_id,
+        user_id=result1.inspection_id,
+        mode=result1.mode,
+    )
+
+    # Run second time
+    result2 = run_next_job(
+        app.state.job_queue,
+        app.state.inspection_store,
+        app.state.result_store,
+        inspection_id,
+    )
+
+    # Same result instance/fields returned, created_at must match exactly
+    assert result1.created_at == result2.created_at
+    assert result2.created_at == first_created_at
+
+    # Verify only one result exists in the store
+    assert app.state.result_store.get_by_inspection_id(inspection_id) == result1
+
+
+def test_run_next_job_no_job_throws_unless_completed(monkeypatch):
+    """If no job is in queue and inspection is not completed, run_next_job raises ValueError."""
+    monkeypatch.setenv("MARETECH_JWT_SECRET", "test-secret")
+    _, app = _create_client()
+
+    with pytest.raises(ValueError, match="No queued job found"):
+        run_next_job(
+            app.state.job_queue,
+            app.state.inspection_store,
+            app.state.result_store,
+            str(uuid4()),
+        )
+
